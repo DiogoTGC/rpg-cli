@@ -2,14 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-int random_number(int min_num, int max_num);
-void tutorial(), 
-	 mudar_cenario(char jogada, char tela[4][4], int conexoes[4]),
-	 npc(char jogada, char tela[4][4]),
-	 imprimir_cenario(char tela[4][4]);
-
-char mundo[][4][4] = {
-	{
+const char MUNDO[][4][4] = { 
+	{ 
 		{'*', '*', '*', '*'},
 		{'F', ' ', 'i', '*'},
 		{'*', ' ', ' ', 'C'},
@@ -29,14 +23,40 @@ char mundo[][4][4] = {
 	}
 };
 
-int conexoes_mundo[][4] = {
+const int CONEXOES_MUNDO[][4] = {
 	{0, 1, 0, 2},
 	{1, 1, 1, 0},
 	{2, 0, 2, 2}
 };
 
+struct personagem {
+	char nome[10];
+	int vida;
+	int vida_max;
+	int forca;
+	int velocidade;
+	int status;
+	int dinheiro;
+};
+
+int random_number(int min_num, int max_num);
+void tutorial(), 
+	 mudar_cenario(char jogada, char tela[4][4], int conexoes[4]),
+	 npc(char jogada, char tela[4][4], struct personagem principal),
+	 imprimir_cenario(char tela[4][4]);
+
 int main() {
+	struct personagem principal;
 	tutorial();
+
+	printf("Qual o seu nome? (Máx. 10 letras) ");
+	scanf("%s", principal.nome);
+	principal.vida = 50;
+	principal.vida_max = 50;
+	principal.forca = 10;
+	principal.velocidade = 10;
+	principal.status = 2;
+	principal.dinheiro = 0;
 
 	int jogo = 1;
 	char jogada;
@@ -59,7 +79,7 @@ int main() {
 		if ((jogada >= 'A') && (jogada <= 'Z')) {
 			mudar_cenario(jogada, cenario_atual, conexoes_atual);
 		} else if ((jogada >= 'a') && (jogada <= 'z')) {
-			npc(jogada, cenario_atual);
+			npc(jogada, cenario_atual, principal);
 		}
 	}
 	return  0;
@@ -96,38 +116,38 @@ void mudar_cenario(char jogada, char tela[4][4], int conexoes[4]) {
 	if (x == 0) {		//Se o caminho for na parte de cima do mapa
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) 
-				tela[i][j] = mundo[conexoes[0]][i][j];
-		}
-		for (int i = 0; i < 4; i++) conexoes[i] = conexoes_mundo[conexoes[0]][i];
+				tela[i][j] = MUNDO[conexoes[0]][i][j];
+		} 
+		for (int i = 0; i < 4; i++) conexoes[i] = CONEXOES_MUNDO[conexoes[0]][i];
 	} else if (y == 3) {//Se o caminho for na parte direita do mapa
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++)
-				tela[i][j] = mundo[conexoes[1]][i][j];
+				tela[i][j] = MUNDO[conexoes[1]][i][j];
 		}
-		for (int i = 0; i < 4; i++) conexoes[i] = conexoes_mundo[conexoes[1]][i];
+		for (int i = 0; i < 4; i++) conexoes[i] = CONEXOES_MUNDO[conexoes[1]][i];
 	} else if (x == 3) {//Se o caminho for na parte de baixo do mapa
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++)
-				tela[i][j] = mundo[conexoes[2]][i][j];
+				tela[i][j] = MUNDO[conexoes[2]][i][j];
 		}
-		for (int i = 0; i < 4; i++) conexoes[i] = conexoes_mundo[conexoes[2]][i];
+		for (int i = 0; i < 4; i++) conexoes[i] = CONEXOES_MUNDO[conexoes[2]][i];
 	} else if (y == 0) {//Se o caminho for na parte esquerda do mapa
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++)
-				tela[i][j] = mundo[conexoes[3]][i][j];
+				tela[i][j] = MUNDO[conexoes[3]][i][j];
 		}
-		for (int i = 0; i < 4; i++) conexoes[i] = conexoes_mundo[conexoes[3]][i];
+		for (int i = 0; i < 4; i++) conexoes[i] = CONEXOES_MUNDO[conexoes[3]][i];
 	}
 }
 
-void npc(char jogada, char tela[4][4]) {
+void npc(char jogada, char tela[4][4], struct personagem principal) {
 	int ok = 0;
 	for (int i = 0; i < 4; i++) {//Checa se o npc existe na tela atual
 		for (int j = 0; j < 4; j++) {
 			if (jogada == tela[i][j]) {
 				ok = 1;
 				break;
-			}	
+			}
 		}
 	}
 
@@ -135,11 +155,12 @@ void npc(char jogada, char tela[4][4]) {
 		int escolha = 0;
 		do {
 			if (jogada == 'i') {
-				printf("===============================\n");
-				printf("O que deseja aventureiro?\n");
+				printf("======================================\n");
+				printf("Sacerdotisa: O que deseja %s?\n", principal.nome);
 				printf("1)Curar-se \n2)Benção\n0)Sair\n");
+				printf("Escolha: ");
 				scanf("%d", &escolha);
-				printf("===============================\n");
+				printf("======================================\n");
 
 				if (escolha == 1) {
 					//cura();
@@ -151,11 +172,12 @@ void npc(char jogada, char tela[4][4]) {
 					printf("Escolha inválida.\n");
 				}
 			} else if (jogada == 'z') {
-				printf("=========================================\n");
-				printf("O que deseja aventureiro?\n");
+				printf("=====================================================\n");
+				printf("Ferreiro: O que deseja %s?\n", principal.nome);
 				printf("1)Reparar itens\n2)Melhorar itens\n0)Sair\n");
+				printf("Escolha: ");
 				scanf("%d", &escolha);
-				printf("=========================================\n");
+				printf("=====================================================\n");
 
 				if (escolha == 1) {
 					//reparar_itens();
@@ -168,8 +190,20 @@ void npc(char jogada, char tela[4][4]) {
 				}
 			}
 		} while (escolha != 0);
-	} else {
-		printf("Não tem esse personagem aqui.");
+	} else if (jogada == 'p') {
+		printf("ATRIBUTOS DO PERSONAGEM\n");
+		printf("%s  %d¢\n", principal.nome, principal.dinheiro);
+		printf("Vida: %d / %d\n", principal.vida, principal.vida_max);
+		printf("Força: %d(%d)  Velocidade: %d(%d)\n", principal.forca, principal.status, principal.velocidade, principal.status);
+		if (principal.status >= 0) {
+			printf("Buff: %d", principal.status);
+		} else {
+			printf("Debuff: %d", principal.status);		
+		}
+	} else if (jogada == 'z') {
+		printf("Não tem ferreiro aqui");
+	} else if (jogada == 'i') {
+		printf("Não tem igreja aqui.");
 	}
 }
 
@@ -195,5 +229,6 @@ void tutorial() {
 	printf("Letras maiúsculas são saídas para uma nova tela.\nC = Cidade, F = Floresta, D = Dungeon\n");
 	printf("Construções interagíveis são ilustradas por letras minúsculas.\nz = ferreiro, i = igreja\n");
 	printf("Asterisco são construções sem importância, em cidades são casas, florestas podem ser árvores e arbustos, por exemplo.\n");
+	printf("Para ver os atributos do seu personagem digite p.");
 	printf("================================================\n\n");
 };
